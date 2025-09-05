@@ -1,0 +1,11 @@
+com\amalitech\pages\CartPage.class
+com\amalitech\pages\CheckoutPage.class
+com\amalitech\constants\AppConstants.class
+com\amalitech\pages\LoginPage.class
+com\amalitech\utils\TestDataProvider.class
+com\amalitech\pages\MenuPage.class
+com\amalitech\pages\ProductsPage.class
+com\amalitech\utils\WaitUtils.class
+com\amalitech\base\BasePage.class
+com\amalitech\base\BaseTest.class
+com\amalitech\utils\ConfigReader.class
