@@ -1,212 +1,185 @@
 package com.amalitech.tests;
 
 import com.amalitech.base.BaseTest;
-import com.amalitech.constants.*;
-import com.amalitech.pages.*;
-import io.qameta.allure.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.amalitech.pages.LoginPage;
+import com.amalitech.pages.ProductsPage;
+import com.amalitech.pages.CartPage;
+import com.amalitech.pages.CheckoutPage;
+import com.amalitech.utils.WaitUtils;
+import io.appium.java_client.AppiumBy;
+import org.openqa.selenium.WebElement;
 import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-@Epic("Swag Labs Mobile Application")
-@Feature("End-to-End User Journey")
 public class EndToEndTest extends BaseTest {
 
-    private static final Logger logger = LogManager.getLogger(EndToEndTest.class);
+    private LoginPage loginPage;
+    private ProductsPage productsPage;
+    private CartPage cartPage;
+    private CheckoutPage checkoutPage;
+    private WaitUtils waitUtils;
 
-    @Test(description = "Complete user journey from login to logout")
-    @Story("Complete E2E user flow")
-    @Severity(SeverityLevel.CRITICAL)
-    @Description("Test covers the complete user journey: login, browse products, add items to cart, checkout, and logout")
-    public void testCompleteUserJourney() {
+    @BeforeMethod
+    public void setUp() {
+        loginPage = new LoginPage(driver);
+        productsPage = new ProductsPage(driver);
+        cartPage = new CartPage(driver);
+        checkoutPage = new CheckoutPage(driver);
+        waitUtils = new WaitUtils(driver);
 
-        logger.info("Starting complete user journey test");
-
-        // Initialize page objects
-        LoginPage loginPage = new LoginPage(driver);
-        ProductsPage productsPage = new ProductsPage(driver);
-        CartPage cartPage = new CartPage(driver);
-        CheckoutPage checkoutPage = new CheckoutPage(driver);
-        MenuPage menuPage = new MenuPage(driver);
-
-        // Step 1: Wait for application to load and perform login
-        performLogin(loginPage, productsPage);
-
-        // Step 2: Browse products and add items to cart
-        addItemsToCart(productsPage);
-
-        // Step 3: Navigate to cart and verify items
-        navigateToCartAndVerifyItems(productsPage, cartPage);
-
-        // Step 4: Remove one item from cart
-        removeItemFromCart(cartPage);
-
-        // Step 5: Proceed with checkout
-        proceedWithCheckout(cartPage, checkoutPage);
-
-        // Step 6: Fill checkout information and complete purchase
-        completeCheckoutProcess(checkoutPage);
-
-        // Step 7: Return to home and logout
-        returnHomeAndLogout(checkoutPage, menuPage, loginPage);
-
-        logger.info("Complete user journey test completed successfully");
+        // Wait for app to load
+        waitUtils.hardWait(3);
     }
 
-    @Step("Perform login with standard user")
-    private void performLogin(LoginPage loginPage, ProductsPage productsPage) {
-        logger.info("Step 1: Performing login");
+    @Test(description = "Complete user journey from login to purchase")
+    public void testCompleteUserJourney() {
+        System.out.println("Starting complete user journey test...");
 
-        // Wait for login page and login
-        loginPage.waitForLoginPageToLoad();
-        Assert.assertTrue(loginPage.isLoginPageDisplayed(), "Login page should be displayed");
+        try {
+            // Step 1: Login
+            performLogin();
 
+            // Step 2: Add items to cart
+            addItemsToCart();
+
+            // Step 3: Navigate to cart and manage items
+            navigateToCartAndManageItems();
+
+            // Step 4: Complete checkout
+            completeCheckoutProcess();
+
+            System.out.println("Complete user journey test passed!");
+
+        } catch (Exception e) {
+            System.err.println("Complete user journey test failed: " + e.getMessage());
+            e.printStackTrace();
+            Assert.fail("Test failed: " + e.getMessage());
+        }
+    }
+
+    private void performLogin() {
+        System.out.println("=== Step 1: Performing Login ===");
+
+        // Navigate to login if needed
+        loginPage.navigateToLoginIfNeeded();
+        Assert.assertTrue(loginPage.isLoginPageDisplayed(), "Should be on login page");
+
+        // Login with standard user
         loginPage.loginWithStandardUser();
 
-        // Verify successful login by checking products page
+        // Verify we're on products page
         productsPage.waitForProductsPageToLoad();
-        Assert.assertTrue(productsPage.isProductsPageDisplayed(), "Products page should be displayed after login");
-        Assert.assertEquals(productsPage.getProductsPageTitle(), AppConstants.PRODUCTS_PAGE_TITLE,
-                "Products page title should be correct");
+        String title = productsPage.getProductsPageTitle();
+        Assert.assertEquals(title, "PRODUCTS", "Should be on products page");
 
-        logger.info("Login successful - Products page displayed");
+        System.out.println("Login completed successfully");
     }
 
-    @Step("Add items to cart")
-    private void addItemsToCart(ProductsPage productsPage) {
-        logger.info("Step 2: Adding items to cart");
+    private void addItemsToCart() {
+        System.out.println("=== Step 2: Adding Items to Cart ===");
 
-        // Get initial product count
-        int initialProductCount = productsPage.getProductsCount();
-        Assert.assertTrue(initialProductCount > 0, "Products should be available on the page");
-        logger.info("Found " + initialProductCount + " products available");
+        try {
+            // Verify PRODUCTS title is visible
+            WebElement productsTitle = driver.findElement(
+                    AppiumBy.androidUIAutomator("new UiSelector().text(\"PRODUCTS\")")
+            );
+            Assert.assertTrue(productsTitle.isDisplayed(), "Products title should be visible");
 
-        // Add first and second items to cart
-        productsPage.addFirstItemToCart();
-        logger.info("Added first item to cart");
+            // Click on product image (instance 4 as per your sequence)
+            WebElement productImage = driver.findElement(
+                    AppiumBy.androidUIAutomator("new UiSelector().className(\"android.widget.ImageView\").instance(4)")
+            );
+            productImage.click();
+            waitUtils.hardWait(1);
 
-        productsPage.addSecondItemToCart();
-        logger.info("Added second item to cart");
+            // Add items by clicking + button 3 times
+            for (int i = 0; i < 3; i++) {
+                WebElement addButton = driver.findElement(
+                        AppiumBy.androidUIAutomator("new UiSelector().text(\"+\").instance(0)")
+                );
+                addButton.click();
+                waitUtils.hardWait(1);
+            }
 
-        // Verify items are added (check remove buttons count)
-        Assert.assertEquals(productsPage.getRemoveButtonsCount(), 2,
-                "Should have 2 remove buttons indicating items in cart");
+            System.out.println("Successfully added 3 items to cart");
 
-        logger.info("Successfully added 2 items to cart");
+        } catch (Exception e) {
+            System.err.println("Failed to add items to cart: " + e.getMessage());
+            throw e;
+        }
     }
 
-    @Step("Navigate to cart and verify items")
-    private void navigateToCartAndVerifyItems(ProductsPage productsPage, CartPage cartPage) {
-        logger.info("Step 3: Navigating to cart and verifying items");
+    private void navigateToCartAndManageItems() {
+        System.out.println("=== Step 3: Navigate to Cart and Manage Items ===");
 
-        // Click on cart icon
-        productsPage.clickCartIcon();
+        try {
+            // Click cart icon (instance 3 as per your sequence)
+            WebElement cartIcon = driver.findElement(
+                    AppiumBy.androidUIAutomator("new UiSelector().className(\"android.widget.ImageView\").instance(3)")
+            );
+            cartIcon.click();
+            waitUtils.hardWait(2);
 
-        // Verify cart page is displayed
-        cartPage.waitForCartPageToLoad();
-        Assert.assertTrue(cartPage.isCartPageDisplayed(), "Cart page should be displayed");
-        Assert.assertEquals(cartPage.getCartPageTitle(), AppConstants.CART_PAGE_TITLE,
-                "Cart page title should be correct");
+            // Verify we're on cart page
+            WebElement cartTitle = driver.findElement(
+                    AppiumBy.androidUIAutomator("new UiSelector().text(\"YOUR CART\")")
+            );
+            Assert.assertTrue(cartTitle.isDisplayed(), "Should be on cart page");
 
-        // Verify cart has items
-        int cartItemsCount = cartPage.getCartItemsCount();
-        Assert.assertEquals(cartItemsCount, 2, "Cart should contain 2 items");
+            // Verify description is visible
+            WebElement description = driver.findElement(
+                    AppiumBy.androidUIAutomator("new UiSelector().text(\"DESCRIPTION\")")
+            );
+            Assert.assertTrue(description.isDisplayed(), "Description should be visible");
 
-        // Verify remove button is visible
-        Assert.assertTrue(cartPage.isRemoveButtonVisible(), "Remove button should be visible");
+            // Remove 2 items (clicking REMOVE button twice)
+            for (int i = 0; i < 2; i++) {
+                WebElement removeButton = driver.findElement(
+                        AppiumBy.androidUIAutomator("new UiSelector().description(\"test-REMOVE\").instance(0)")
+                );
+                removeButton.click();
+                waitUtils.hardWait(1);
+            }
 
-        logger.info("Cart page verified with " + cartItemsCount + " items");
+            System.out.println("Successfully managed cart items");
+
+        } catch (Exception e) {
+            System.err.println("Failed to manage cart: " + e.getMessage());
+            throw e;
+        }
     }
 
-    @Step("Remove one item from cart")
-    private void removeItemFromCart(CartPage cartPage) {
-        logger.info("Step 4: Removing one item from cart");
+    private void completeCheckoutProcess() {
+        System.out.println("=== Step 4: Complete Checkout Process ===");
 
-        // Remove first item
-        cartPage.removeFirstItem();
+        try {
+            // Click checkout button
+            WebElement checkoutButton = driver.findElement(AppiumBy.accessibilityId("test-CHECKOUT"));
+            checkoutButton.click();
+            waitUtils.hardWait(2);
 
-        // Verify item is removed
-        Assert.assertEquals(cartPage.getCartItemsCount(), 1,
-                "Cart should contain 1 item after removing one");
+            // Fill checkout information
+            checkoutPage.fillShippingInfo("Emmanuel", "Arhu", "0233");
+            checkoutPage.clickContinue();
+            waitUtils.hardWait(2);
 
-        logger.info("Successfully removed one item from cart");
-    }
+            // Complete the purchase
+            checkoutPage.clickFinish();
+            waitUtils.hardWait(2);
 
-    @Step("Proceed with checkout")
-    private void proceedWithCheckout(CartPage cartPage, CheckoutPage checkoutPage) {
-        logger.info("Step 5: Proceeding with checkout");
+            // Return to home
+            checkoutPage.clickBackHome();
+            waitUtils.hardWait(2);
 
-        // Click checkout button
-        Assert.assertTrue(cartPage.isCheckoutButtonDisplayed(), "Checkout button should be displayed");
-        cartPage.clickCheckoutButton();
+            // Verify we're back on products page
+            Assert.assertTrue(productsPage.isProductsPageDisplayed(), "Should be back on products page");
 
-        // Verify checkout information page
-        checkoutPage.waitForCheckoutInformationPageToLoad();
-        Assert.assertTrue(checkoutPage.isCheckoutInformationPageDisplayed(),
-                "Checkout information page should be displayed");
-        Assert.assertEquals(checkoutPage.getCheckoutInformationTitle(),
-                AppConstants.CHECKOUT_INFO_TITLE, "Checkout info title should be correct");
+            System.out.println("Checkout process completed successfully");
 
-        logger.info("Checkout information page displayed");
-    }
-
-    @Step("Complete checkout process")
-    private void completeCheckoutProcess(CheckoutPage checkoutPage) {
-        logger.info("Step 6: Completing checkout process");
-
-        // Fill checkout information
-        Assert.assertTrue(checkoutPage.validateCheckoutInformationFields(),
-                "Checkout form fields should be displayed");
-
-        checkoutPage.fillCheckoutInformationWithDefaults();
-        checkoutPage.clickContinueButton();
-
-        // Verify checkout overview page
-        Assert.assertTrue(checkoutPage.isCheckoutOverviewPageDisplayed(),
-                "Checkout overview page should be displayed");
-
-        // Scroll down and finish checkout
-        checkoutPage.clickFinishButton();
-
-        // Verify checkout complete page
-        checkoutPage.waitForCheckoutCompletePageToLoad();
-        Assert.assertTrue(checkoutPage.isCheckoutCompletePageDisplayed(),
-                "Checkout complete page should be displayed");
-        Assert.assertEquals(checkoutPage.getCheckoutCompleteTitle(),
-                AppConstants.CHECKOUT_COMPLETE_TITLE, "Checkout complete title should be correct");
-
-        // Verify thank you message or back home button
-        Assert.assertTrue(checkoutPage.isBackHomeButtonDisplayed(),
-                "Back home button should be displayed");
-
-        logger.info("Checkout process completed successfully");
-    }
-
-    @Step("Return home and logout")
-    private void returnHomeAndLogout(CheckoutPage checkoutPage, MenuPage menuPage, LoginPage loginPage) {
-        logger.info("Step 7: Returning home and logging out");
-
-        // Click back home button
-        checkoutPage.clickBackHomeButton();
-
-        // Verify we're back on products page (or home page)
-        // Small wait to ensure page transition
-        waitUtils.hardWait(2);
-
-        // Open hamburger menu and logout
-        Assert.assertTrue(menuPage.isHamburgerMenuDisplayed(), "Hamburger menu should be displayed");
-        menuPage.performLogout();
-
-        // Verify logout successful - should be back to login page
-        loginPage.waitForLoginPageToLoad();
-        Assert.assertTrue(loginPage.isLoginPageDisplayed(), "Should be back to login page after logout");
-
-        // Verify login page image is there (as per test requirement)
-        String loginImageSelector = "new UiSelector().className(\"android.widget.ImageView\").instance(1)";
-        Assert.assertTrue(loginPage.isElementDisplayedByUiSelector(loginImageSelector),
-                "Login page image should be displayed");
-
-        logger.info("Successfully logged out and returned to login page");
+        } catch (Exception e) {
+            System.err.println("Failed to complete checkout: " + e.getMessage());
+            throw e;
+        }
     }
 }

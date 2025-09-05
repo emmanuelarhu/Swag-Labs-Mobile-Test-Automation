@@ -1,160 +1,298 @@
 package com.amalitech.pages;
 
 import com.amalitech.base.BasePage;
-import com.amalitech.constants.AppConstants;
+import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import java.time.Duration;
 
 public class LoginPage extends BasePage {
 
-    private static final Logger logger = LogManager.getLogger(LoginPage.class);
+    // Locators
+    private final String USERNAME_FIELD = "test-Username";
+    private final String PASSWORD_FIELD = "test-Password";
+    private final String LOGIN_BUTTON = "test-LOGIN";
+    private final String ERROR_MESSAGE = "test-Error message";
+
+    // Alternative locators using UiAutomator
+    private final String USERNAME_FIELD_ALT = "new UiSelector().className(\"android.widget.EditText\").instance(0)";
+    private final String PASSWORD_FIELD_ALT = "new UiSelector().className(\"android.widget.EditText\").instance(1)";
+    private final String LOGIN_BUTTON_ALT = "new UiSelector().text(\"LOGIN\")";
 
     public LoginPage(AndroidDriver driver) {
         super(driver);
     }
 
     /**
-     * Enter username
+     * Wait for login page to load - for compatibility with existing tests
      */
-    public LoginPage enterUsername(String username) {
-        logger.info("Entering username: " + username);
-        sendKeysByAccessibilityId(AppConstants.TEST_USERNAME, username);
-        return this;
+    public void waitForLoginPageToLoad() {
+        waitForLoginPage();
     }
 
     /**
-     * Enter password
+     * Wait for login page to be loaded
      */
-    public LoginPage enterPassword(String password) {
-        logger.info("Entering password");
-        sendKeysByAccessibilityId(AppConstants.TEST_PASSWORD, password);
-        return this;
+    public void waitForLoginPage() {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+        try {
+            wait.until(ExpectedConditions.or(
+                    ExpectedConditions.presenceOfElementLocated(AppiumBy.accessibilityId(USERNAME_FIELD)),
+                    ExpectedConditions.presenceOfElementLocated(AppiumBy.androidUIAutomator(USERNAME_FIELD_ALT))
+            ));
+        } catch (Exception e) {
+            System.out.println("Login page elements not found, might need to navigate to login screen");
+        }
     }
 
     /**
-     * Click login button
+     * Check if login page is displayed - for compatibility
+     */
+    public boolean isLoginPageDisplayed() {
+        return isOnLoginPage();
+    }
+
+    /**
+     * Enhanced method to find username field with fallback locators
+     */
+    public WebElement getUsernameField() {
+        try {
+            return findByAccessibilityId(USERNAME_FIELD);
+        } catch (Exception e) {
+            System.out.println("Primary username locator failed, trying alternative...");
+            return findByUIAutomator(USERNAME_FIELD_ALT);
+        }
+    }
+
+    /**
+     * Enhanced method to find password field with fallback locators
+     */
+    public WebElement getPasswordField() {
+        try {
+            return findByAccessibilityId(PASSWORD_FIELD);
+        } catch (Exception e) {
+            System.out.println("Primary password locator failed, trying alternative...");
+            return findByUIAutomator(PASSWORD_FIELD_ALT);
+        }
+    }
+
+    /**
+     * Enhanced method to find login button with fallback locators
+     */
+    public WebElement getLoginButton() {
+        try {
+            return findByAccessibilityId(LOGIN_BUTTON);
+        } catch (Exception e) {
+            System.out.println("Primary login button locator failed, trying alternative...");
+            return findByUIAutomator(LOGIN_BUTTON_ALT);
+        }
+    }
+
+    /**
+     * Enter username with error handling
+     */
+    public void enterUsername(String username) {
+        try {
+            WebElement usernameField = getUsernameField();
+            usernameField.clear();
+            usernameField.sendKeys(username);
+            System.out.println("Username entered successfully: " + username);
+        } catch (Exception e) {
+            System.err.println("Failed to enter username: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Enter password with error handling
+     */
+    public void enterPassword(String password) {
+        try {
+            WebElement passwordField = getPasswordField();
+            passwordField.clear();
+            passwordField.sendKeys(password);
+            System.out.println("Password entered successfully");
+        } catch (Exception e) {
+            System.err.println("Failed to enter password: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Click login button with error handling
      */
     public void clickLoginButton() {
-        logger.info("Clicking login button");
-        clickByAccessibilityId(AppConstants.TEST_LOGIN);
+        try {
+            WebElement loginButton = getLoginButton();
+            loginButton.click();
+            System.out.println("Login button clicked successfully");
+        } catch (Exception e) {
+            System.err.println("Failed to click login button: " + e.getMessage());
+            throw e;
+        }
     }
 
     /**
-     * Perform login with username and password
+     * Complete login process
      */
     public void login(String username, String password) {
-        logger.info("Logging in with username: " + username);
-        enterUsername(username)
-                .enterPassword(password)
-                .clickLoginButton();
+        waitForLoginPage();
+        enterUsername(username);
+        enterPassword(password);
+        clickLoginButton();
 
-        // Wait for navigation
-        waitForPageLoad();
-    }
-
-    /**
-     * Perform login with standard user credentials
-     */
-    public void loginWithStandardUser() {
-        login(AppConstants.STANDARD_USER, AppConstants.PASSWORD);
-    }
-
-    /**
-     * Perform login with locked out user credentials
-     */
-    public void loginWithLockedOutUser() {
-        login(AppConstants.LOCKED_OUT_USER, AppConstants.PASSWORD);
-    }
-
-    /**
-     * Get error message text
-     */
-    public String getErrorMessage() {
-        logger.debug("Getting error message");
+        // Wait a moment for login to process
         try {
-            return getTextByAccessibilityId(AppConstants.TEST_ERROR_MESSAGE);
-        } catch (Exception e) {
-            logger.warn("Error message not found");
-            return "";
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
+    }
+
+    // Compatibility methods for existing tests
+    public void loginWithStandardUser() {
+        login("standard_user", "secret_sauce");
+    }
+
+    public void loginWithLockedOutUser() {
+        login("locked_out_user", "secret_sauce");
+    }
+
+    public void loginWithProblemUser() {
+        login("problem_user", "secret_sauce");
+    }
+
+    public void loginWithInvalidCredentials() {
+        login("invalid_user", "wrong_password");
     }
 
     /**
      * Check if error message is displayed
      */
     public boolean isErrorMessageDisplayed() {
-        logger.debug("Checking if error message is displayed");
-        return isElementDisplayedByAccessibilityId(AppConstants.TEST_ERROR_MESSAGE);
+        try {
+            WebElement errorElement = findByAccessibilityId(ERROR_MESSAGE);
+            return errorElement.isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**
-     * Check if login button is displayed
+     * Get error message text
      */
-    public boolean isLoginButtonDisplayed() {
-        logger.debug("Checking if login button is displayed");
-        return isElementDisplayedByAccessibilityId(AppConstants.TEST_LOGIN);
+    public String getErrorMessageText() {
+        try {
+            WebElement errorElement = findByAccessibilityId(ERROR_MESSAGE);
+            return errorElement.getText();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /**
+     * Get error message - compatibility method
+     */
+    public String getErrorMessage() {
+        return getErrorMessageText();
     }
 
     /**
      * Check if username field is displayed
      */
     public boolean isUsernameFieldDisplayed() {
-        logger.debug("Checking if username field is displayed");
-        return isElementDisplayedByAccessibilityId(AppConstants.TEST_USERNAME);
+        try {
+            getUsernameField();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**
      * Check if password field is displayed
      */
     public boolean isPasswordFieldDisplayed() {
-        logger.debug("Checking if password field is displayed");
-        return isElementDisplayedByAccessibilityId(AppConstants.TEST_PASSWORD);
+        try {
+            getPasswordField();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**
-     * Check if login page is displayed
+     * Check if login button is displayed
      */
-    public boolean isLoginPageDisplayed() {
-        logger.debug("Checking if login page is displayed");
-        return isUsernameFieldDisplayed() && isPasswordFieldDisplayed() && isLoginButtonDisplayed();
+    public boolean isLoginButtonDisplayed() {
+        try {
+            getLoginButton();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**
-     * Clear username field
+     * Clear all input fields safely
      */
-    public LoginPage clearUsername() {
-        logger.info("Clearing username field");
-        findByAccessibilityId(AppConstants.TEST_USERNAME).clear();
-        return this;
+    public void clearAllFields() {
+        try {
+            WebElement usernameField = getUsernameField();
+            if (usernameField != null) {
+                usernameField.clear();
+            }
+        } catch (Exception e) {
+            System.out.println("Could not clear username field: " + e.getMessage());
+        }
+
+        try {
+            WebElement passwordField = getPasswordField();
+            if (passwordField != null) {
+                passwordField.clear();
+            }
+        } catch (Exception e) {
+            System.out.println("Could not clear password field: " + e.getMessage());
+        }
     }
 
     /**
-     * Clear password field
+     * Check if we're on the login page
      */
-    public LoginPage clearPassword() {
-        logger.info("Clearing password field");
-        findByAccessibilityId(AppConstants.TEST_PASSWORD).clear();
-        return this;
+    public boolean isOnLoginPage() {
+        try {
+            getUsernameField();
+            getPasswordField();
+            getLoginButton();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**
-     * Clear all fields
+     * Navigate to login page if not already there
      */
-    public LoginPage clearAllFields() {
-        logger.info("Clearing all login fields");
-        return clearUsername().clearPassword();
-    }
+    public void navigateToLoginIfNeeded() {
+        if (!isOnLoginPage()) {
+            System.out.println("Not on login page, attempting to navigate...");
+            // Try to find and click menu/logout button if available
+            try {
+                WebElement menuButton = findByUIAutomator("new UiSelector().className(\"android.widget.ImageView\").instance(0)");
+                menuButton.click();
+                Thread.sleep(1000);
 
-    public LoginPage waitForLoginPageToLoad() {
-        logger.info("Waiting for login page to load");
-        waitUtils.waitForElementToBeVisible(
-                io.appium.java_client.AppiumBy.accessibilityId(AppConstants.TEST_USERNAME)
-        );
-        return this;
-    }
+                // Look for logout option
+                WebElement logoutButton = findByAccessibilityId("test-LOGOUT");
+                logoutButton.click();
+                Thread.sleep(2000);
 
-    public void loginWithProblemUser() {
-        login(AppConstants.PROBLEM_USER, AppConstants.PASSWORD);
+                waitForLoginPage();
+            } catch (Exception e) {
+                System.out.println("Could not navigate to login page: " + e.getMessage());
+            }
+        }
     }
 }

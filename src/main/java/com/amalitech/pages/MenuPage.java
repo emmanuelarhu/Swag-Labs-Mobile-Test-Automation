@@ -1,184 +1,124 @@
 package com.amalitech.pages;
 
 import com.amalitech.base.BasePage;
-import com.amalitech.constants.AppConstants;
+import com.amalitech.utils.WaitUtils;
 import io.appium.java_client.android.AndroidDriver;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class MenuPage extends BasePage {
 
-    private static final Logger logger = LogManager.getLogger(MenuPage.class);
+    private WaitUtils waitUtils;
 
-    // Page elements
-    private final String HAMBURGER_MENU_SELECTOR = "new UiSelector().className(\"android.widget.ImageView\").instance(1)";
-    private final String LOGOUT_SELECTOR = "new UiSelector().text(\"LOGOUT\")";
-    private final String ALL_ITEMS_SELECTOR = "new UiSelector().text(\"ALL ITEMS\")";
-    private final String ABOUT_SELECTOR = "new UiSelector().text(\"ABOUT\")";
-    private final String RESET_APP_STATE_SELECTOR = "new UiSelector().text(\"RESET APP STATE\")";
-    private final String CLOSE_MENU_SELECTOR = "new UiSelector().className(\"android.widget.ImageView\").instance(0)";
+    // UI Selector locators for menu elements
+    private String menuButton = "new UiSelector().description(\"test-Menu\")";
+    private String allItemsOption = "new UiSelector().description(\"test-ALL ITEMS\")";
+    private String aboutOption = "new UiSelector().description(\"test-ABOUT\")";
+    private String logoutOption = "new UiSelector().description(\"test-LOGOUT\")";
+    private String resetAppStateOption = "new UiSelector().description(\"test-RESET APP STATE\")";
+    private String webViewOption = "new UiSelector().description(\"test-WEBVIEW\")";
+    private String closeMenuButton = "new UiSelector().description(\"test-Close Menu\")";
 
     public MenuPage(AndroidDriver driver) {
         super(driver);
+        this.waitUtils = new WaitUtils(driver);
     }
 
     /**
-     * Open hamburger menu
-     */
-    public MenuPage openHamburgerMenu() {
-        logger.info("Opening hamburger menu");
-        clickByUiSelector(HAMBURGER_MENU_SELECTOR);
-        waitForMenuToOpen();
-        return this;
-    }
-
-    /**
-     * Close hamburger menu
-     */
-    public MenuPage closeHamburgerMenu() {
-        logger.info("Closing hamburger menu");
-        try {
-            clickByUiSelector(CLOSE_MENU_SELECTOR);
-            waitForPageLoad();
-        } catch (Exception e) {
-            logger.warn("Could not close menu using close button, trying alternative method");
-            // Alternative: tap outside menu area or use back button
-            driver.navigate().back();
-        }
-        return this;
-    }
-
-    /**
-     * Click logout button
-     */
-    public void clickLogout() {
-        logger.info("Clicking logout button");
-        clickByUiSelector(LOGOUT_SELECTOR);
-        waitForPageLoad();
-    }
-
-    /**
-     * Click all items menu option
-     */
-    public void clickAllItems() {
-        logger.info("Clicking all items menu option");
-        clickByUiSelector(ALL_ITEMS_SELECTOR);
-        waitForPageLoad();
-    }
-
-    /**
-     * Click about menu option
-     */
-    public void clickAbout() {
-        logger.info("Clicking about menu option");
-        clickByUiSelector(ABOUT_SELECTOR);
-        waitForPageLoad();
-    }
-
-    /**
-     * Click reset app state menu option
-     */
-    public void clickResetAppState() {
-        logger.info("Clicking reset app state menu option");
-        clickByUiSelector(RESET_APP_STATE_SELECTOR);
-        waitForPageLoad();
-    }
-
-    /**
-     * Check if hamburger menu icon is displayed
+     * Check if hamburger menu is displayed - compatibility method
      */
     public boolean isHamburgerMenuDisplayed() {
-        logger.debug("Checking if hamburger menu icon is displayed");
-        return isElementDisplayedByUiSelector(HAMBURGER_MENU_SELECTOR);
+        return isElementDisplayedByUiSelector(menuButton);
     }
 
     /**
-     * Check if logout option is displayed in menu
-     */
-    public boolean isLogoutOptionDisplayed() {
-        logger.debug("Checking if logout option is displayed");
-        return isElementDisplayedByUiSelector(LOGOUT_SELECTOR);
-    }
-
-    /**
-     * Check if all items option is displayed in menu
-     */
-    public boolean isAllItemsOptionDisplayed() {
-        logger.debug("Checking if all items option is displayed");
-        return isElementDisplayedByUiSelector(ALL_ITEMS_SELECTOR);
-    }
-
-    /**
-     * Check if about option is displayed in menu
-     */
-    public boolean isAboutOptionDisplayed() {
-        logger.debug("Checking if about option is displayed");
-        return isElementDisplayedByUiSelector(ABOUT_SELECTOR);
-    }
-
-    /**
-     * Check if reset app state option is displayed in menu
-     */
-    public boolean isResetAppStateOptionDisplayed() {
-        logger.debug("Checking if reset app state option is displayed");
-        return isElementDisplayedByUiSelector(RESET_APP_STATE_SELECTOR);
-    }
-
-    /**
-     * Wait for menu to open
-     */
-    private void waitForMenuToOpen() {
-        logger.debug("Waiting for menu to open");
-        waitUtils.waitForElementToBeVisible(
-                io.appium.java_client.AppiumBy.androidUIAutomator(LOGOUT_SELECTOR)
-        );
-    }
-
-    /**
-     * Validate menu options are displayed
-     */
-    public boolean validateMenuOptions() {
-        logger.info("Validating menu options are displayed");
-        return isLogoutOptionDisplayed() &&
-                isAllItemsOptionDisplayed() &&
-                isAboutOptionDisplayed() &&
-                isResetAppStateOptionDisplayed();
-    }
-
-    /**
-     * Perform complete logout flow
+     * Perform logout - compatibility method
      */
     public void performLogout() {
-        logger.info("Performing complete logout flow");
-        openHamburgerMenu();
-        clickLogout();
+        logout();
     }
 
-    /**
-     * Navigate to all items
-     */
-    public void navigateToAllItems() {
-        logger.info("Navigating to all items");
-        openHamburgerMenu();
-        clickAllItems();
+    public void openMenu() {
+        clickByUiSelector(menuButton);
     }
 
-    /**
-     * Reset application state
-     */
-    public void resetApplicationState() {
-        logger.info("Resetting application state");
-        openHamburgerMenu();
-        clickResetAppState();
-        closeHamburgerMenu();
+    public void selectAllItems() {
+        try {
+            clickByUiSelector(allItemsOption);
+            waitForPageLoad();
+        } catch (Exception e) {
+            System.err.println("Failed to select All Items: " + e.getMessage());
+        }
     }
 
-    /**
-     * Navigate to about page
-     */
-    public void navigateToAbout() {
-        logger.info("Navigating to about page");
-        openHamburgerMenu();
-        clickAbout();
+    public void selectAbout() {
+        try {
+            clickByUiSelector(aboutOption);
+            waitForPageLoad();
+        } catch (Exception e) {
+            System.err.println("Failed to select About: " + e.getMessage());
+        }
+    }
+
+    public void logout() {
+        try {
+            clickByUiSelector(logoutOption);
+            waitForPageLoad();
+        } catch (Exception e) {
+            System.err.println("Failed to logout: " + e.getMessage());
+        }
+    }
+
+    public void resetAppState() {
+        try {
+            clickByUiSelector(resetAppStateOption);
+            waitForPageLoad();
+        } catch (Exception e) {
+            System.err.println("Failed to reset app state: " + e.getMessage());
+        }
+    }
+
+    public void selectWebView() {
+        try {
+            clickByUiSelector(webViewOption);
+            waitForPageLoad();
+        } catch (Exception e) {
+            System.err.println("Failed to select WebView: " + e.getMessage());
+        }
+    }
+
+    public void closeMenu() {
+        try {
+            clickByUiSelector(closeMenuButton);
+            waitForPageLoad();
+        } catch (Exception e) {
+            System.err.println("Failed to close menu: " + e.getMessage());
+        }
+    }
+
+    public boolean isAllItemsOptionDisplayed() {
+        return isElementDisplayedByUiSelector(allItemsOption);
+    }
+
+    public boolean isAboutOptionDisplayed() {
+        return isElementDisplayedByUiSelector(aboutOption);
+    }
+
+    public boolean isLogoutOptionDisplayed() {
+        return isElementDisplayedByUiSelector(logoutOption);
+    }
+
+    public boolean isResetAppStateOptionDisplayed() {
+        return isElementDisplayedByUiSelector(resetAppStateOption);
+    }
+
+    public boolean isWebViewOptionDisplayed() {
+        return isElementDisplayedByUiSelector(webViewOption);
+    }
+
+    public void waitForMenuToLoad() {
+        try {
+            waitUtils.waitForPageLoad();
+        } catch (Exception e) {
+            System.err.println("Menu failed to load: " + e.getMessage());
+        }
     }
 }

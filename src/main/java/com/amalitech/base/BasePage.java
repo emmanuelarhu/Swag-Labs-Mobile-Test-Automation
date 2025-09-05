@@ -1,211 +1,253 @@
 package com.amalitech.base;
 
-import com.amalitech.utils.WaitUtils;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Dimension;
-import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.PointerInput;
-import org.openqa.selenium.interactions.Sequence;
-import org.openqa.selenium.support.PageFactory;
-
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import java.time.Duration;
-import java.util.List;
 
 public class BasePage {
 
     protected AndroidDriver driver;
-    protected WaitUtils waitUtils;
-    private static final Logger logger = LogManager.getLogger(BasePage.class);
+    protected WebDriverWait wait;
 
     public BasePage(AndroidDriver driver) {
         this.driver = driver;
-        this.waitUtils = new WaitUtils(driver);
-        PageFactory.initElements(driver, this);
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
     /**
-     * Find element by accessibility id
+     * Find element by accessibility ID with wait
      */
-    protected WebElement findByAccessibilityId(String accessibilityId) {
-        logger.debug("Finding element by accessibility id: " + accessibilityId);
-        return driver.findElement(AppiumBy.accessibilityId(accessibilityId));
-    }
-
-    /**
-     * Find elements by accessibility id
-     */
-    protected List<WebElement> findElementsByAccessibilityId(String accessibilityId) {
-        logger.debug("Finding elements by accessibility id: " + accessibilityId);
-        return driver.findElements(AppiumBy.accessibilityId(accessibilityId));
-    }
-
-    /**
-     * Find element by xpath
-     */
-    protected WebElement findByXpath(String xpath) {
-        logger.debug("Finding element by xpath: " + xpath);
-        return driver.findElement(By.xpath(xpath));
-    }
-
-    /**
-     * Find element by UiSelector
-     */
-    protected WebElement findByUiSelector(String uiSelector) {
-        logger.debug("Finding element by UiSelector: " + uiSelector);
-        return driver.findElement(AppiumBy.androidUIAutomator(uiSelector));
-    }
-
-    /**
-     * Wait and click element by accessibility id
-     */
-    protected void clickByAccessibilityId(String accessibilityId) {
-        logger.info("Clicking element by accessibility id: " + accessibilityId);
-        WebElement element = waitUtils.waitForElementToBeClickable(AppiumBy.accessibilityId(accessibilityId));
-        element.click();
-    }
-
-    /**
-     * Wait and click element by xpath
-     */
-    protected void clickByXpath(String xpath) {
-        logger.info("Clicking element by xpath: " + xpath);
-        WebElement element = waitUtils.waitForElementToBeClickable(By.xpath(xpath));
-        element.click();
-    }
-
-    /**
-     * Wait and click element by UiSelector
-     */
-    protected void clickByUiSelector(String uiSelector) {
-        logger.info("Clicking element by UiSelector: " + uiSelector);
-        WebElement element = waitUtils.waitForElementToBeClickable(AppiumBy.androidUIAutomator(uiSelector));
-        element.click();
-    }
-
-    /**
-     * Send keys to element by accessibility id
-     */
-    protected void sendKeysByAccessibilityId(String accessibilityId, String text) {
-        logger.info("Sending keys to element by accessibility id: " + accessibilityId + " with text: " + text);
-        WebElement element = waitUtils.waitForElementToBeVisible(AppiumBy.accessibilityId(accessibilityId));
-        element.clear();
-        element.sendKeys(text);
-    }
-
-    /**
-     * Get text from element by accessibility id
-     */
-    protected String getTextByAccessibilityId(String accessibilityId) {
-        logger.debug("Getting text from element by accessibility id: " + accessibilityId);
-        WebElement element = waitUtils.waitForElementToBeVisible(AppiumBy.accessibilityId(accessibilityId));
-        return element.getText();
-    }
-
-    /**
-     * Get text from element by xpath
-     */
-    protected String getTextByXpath(String xpath) {
-        logger.debug("Getting text from element by xpath: " + xpath);
-        WebElement element = waitUtils.waitForElementToBeVisible(By.xpath(xpath));
-        return element.getText();
-    }
-
-    /**
-     * Check if element is displayed by accessibility id
-     */
-    public boolean isElementDisplayedByAccessibilityId(String accessibilityId) {
+    public WebElement findByAccessibilityId(String accessibilityId) {
         try {
-            WebElement element = waitUtils.waitForElementToBeVisible(AppiumBy.accessibilityId(accessibilityId), 5);
-            return element.isDisplayed();
+            return wait.until(ExpectedConditions.presenceOfElementLocated(
+                    AppiumBy.accessibilityId(accessibilityId)
+            ));
         } catch (Exception e) {
-            logger.debug("Element not found or not displayed: " + accessibilityId);
+            System.err.println("Element not found with accessibility ID: " + accessibilityId);
+            throw e;
+        }
+    }
+
+    /**
+     * Find element by UIAutomator with wait
+     */
+    public WebElement findByUIAutomator(String uiAutomatorString) {
+        try {
+            return wait.until(ExpectedConditions.presenceOfElementLocated(
+                    AppiumBy.androidUIAutomator(uiAutomatorString)
+            ));
+        } catch (Exception e) {
+            System.err.println("Element not found with UIAutomator: " + uiAutomatorString);
+            throw e;
+        }
+    }
+
+    /**
+     * Find element by XPath with wait
+     */
+    public WebElement findByXPath(String xpath) {
+        try {
+            return wait.until(ExpectedConditions.presenceOfElementLocated(
+                    AppiumBy.xpath(xpath)
+            ));
+        } catch (Exception e) {
+            System.err.println("Element not found with XPath: " + xpath);
+            throw e;
+        }
+    }
+
+    /**
+     * Find element by ID with wait
+     */
+    public WebElement findById(String id) {
+        try {
+            return wait.until(ExpectedConditions.presenceOfElementLocated(
+                    AppiumBy.id(id)
+            ));
+        } catch (Exception e) {
+            System.err.println("Element not found with ID: " + id);
+            throw e;
+        }
+    }
+
+    /**
+     * Find element by class name with wait
+     */
+    public WebElement findByClassName(String className) {
+        try {
+            return wait.until(ExpectedConditions.presenceOfElementLocated(
+                    AppiumBy.className(className)
+            ));
+        } catch (Exception e) {
+            System.err.println("Element not found with class name: " + className);
+            throw e;
+        }
+    }
+
+    /**
+     * Wait for element to be clickable
+     */
+    public WebElement waitForElementToBeClickable(String accessibilityId) {
+        return wait.until(ExpectedConditions.elementToBeClickable(
+                AppiumBy.accessibilityId(accessibilityId)
+        ));
+    }
+
+    /**
+     * Wait for element to be visible
+     */
+    public WebElement waitForElementToBeVisible(String accessibilityId) {
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(
+                AppiumBy.accessibilityId(accessibilityId)
+        ));
+    }
+
+    /**
+     * Check if element exists without throwing exception
+     */
+    public boolean isElementPresent(String accessibilityId) {
+        try {
+            driver.findElement(AppiumBy.accessibilityId(accessibilityId));
+            return true;
+        } catch (Exception e) {
             return false;
         }
     }
 
     /**
-     * Check if element is displayed by xpath
+     * Check if element exists using UIAutomator without throwing exception
+     */
+    public boolean isElementPresentByUIAutomator(String uiAutomatorString) {
+        try {
+            driver.findElement(AppiumBy.androidUIAutomator(uiAutomatorString));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Safe click method with retry
+     */
+    public void safeClick(WebElement element) {
+        int attempts = 0;
+        while (attempts < 3) {
+            try {
+                element.click();
+                break;
+            } catch (Exception e) {
+                attempts++;
+                if (attempts >= 3) {
+                    throw e;
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+    }
+
+    /**
+     * Safe send keys method with retry
+     */
+    public void safeSendKeys(WebElement element, String text) {
+        int attempts = 0;
+        while (attempts < 3) {
+            try {
+                element.clear();
+                element.sendKeys(text);
+                break;
+            } catch (Exception e) {
+                attempts++;
+                if (attempts >= 3) {
+                    throw e;
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+    }
+
+    // Methods to maintain compatibility with existing CartPage and MenuPage
+
+    /**
+     * Check if element is displayed by XPath
      */
     public boolean isElementDisplayedByXpath(String xpath) {
         try {
-            WebElement element = waitUtils.waitForElementToBeVisible(By.xpath(xpath), 5);
+            WebElement element = findByXPath(xpath);
             return element.isDisplayed();
         } catch (Exception e) {
-            logger.debug("Element not found or not displayed: " + xpath);
             return false;
         }
     }
 
     /**
-     * Check if element is displayed by UiSelector - MADE PUBLIC
+     * Get text by XPath
+     */
+    public String getTextByXpath(String xpath) {
+        try {
+            WebElement element = findByXPath(xpath);
+            return element.getText();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /**
+     * Click element by XPath
+     */
+    public void clickByXpath(String xpath) {
+        try {
+            WebElement element = findByXPath(xpath);
+            safeClick(element);
+        } catch (Exception e) {
+            System.err.println("Failed to click element by XPath: " + xpath);
+            throw e;
+        }
+    }
+
+    /**
+     * Check if element is displayed by UI Selector
      */
     public boolean isElementDisplayedByUiSelector(String uiSelector) {
         try {
-            WebElement element = waitUtils.waitForElementToBeVisible(AppiumBy.androidUIAutomator(uiSelector), 5);
+            WebElement element = findByUIAutomator(uiSelector);
             return element.isDisplayed();
         } catch (Exception e) {
-            logger.debug("Element not found or not displayed: " + uiSelector);
             return false;
         }
     }
 
     /**
-     * Scroll down on the screen
+     * Click element by UI Selector
      */
-    protected void scrollDown() {
-        logger.info("Scrolling down");
-        Dimension size = driver.manage().window().getSize();
-        int startX = size.width / 2;
-        int startY = (int) (size.height * 0.8);
-        int endY = (int) (size.height * 0.2);
-
-        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
-        Sequence scroll = new Sequence(finger, 1);
-        scroll.addAction(finger.createPointerMove(Duration.ofMillis(0), PointerInput.Origin.viewport(), startX, startY));
-        scroll.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
-        scroll.addAction(finger.createPointerMove(Duration.ofMillis(1000), PointerInput.Origin.viewport(), startX, endY));
-        scroll.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
-
-        driver.perform(List.of(scroll));
-    }
-
-    /**
-     * Scroll to element and click
-     */
-    protected void scrollToElementAndClick(By by) {
-        logger.info("Scrolling to element and clicking: " + by.toString());
-        WebElement element = waitUtils.waitForElementToBePresent(by);
-        scrollToElement(element);
-        element.click();
-    }
-
-    /**
-     * Scroll to specific element
-     */
-    private void scrollToElement(WebElement element) {
-        Point location = element.getLocation();
-        Dimension size = driver.manage().window().getSize();
-
-        if (location.getY() > size.getHeight() * 0.8) {
-            scrollDown();
+    public void clickByUiSelector(String uiSelector) {
+        try {
+            WebElement element = findByUIAutomator(uiSelector);
+            safeClick(element);
+        } catch (Exception e) {
+            System.err.println("Failed to click element by UI Selector: " + uiSelector);
+            throw e;
         }
     }
 
     /**
-     * Wait for page to load
+     * Wait for page to load (general purpose method)
      */
-    protected void waitForPageLoad() {
-        logger.debug("Waiting for page to load");
+    public void waitForPageLoad() {
         try {
-            Thread.sleep(2000); // Basic wait - can be enhanced with better logic
+            Thread.sleep(2000); // Generic wait - can be customized per page
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            logger.error("Thread interrupted during wait", e);
         }
     }
 }

@@ -1,254 +1,342 @@
 package com.amalitech.pages;
 
 import com.amalitech.base.BasePage;
-import com.amalitech.constants.AppConstants;
+import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.interactions.PointerInput;
+import org.openqa.selenium.interactions.Sequence;
+import org.openqa.selenium.Point;
+import java.time.Duration;
+import java.util.Arrays;
 
 public class CheckoutPage extends BasePage {
 
-    private static final Logger logger = LogManager.getLogger(CheckoutPage.class);
-
-    // Page elements
-    private final String CHECKOUT_INFO_TITLE_XPATH = "//android.widget.TextView[@text='CHECKOUT: INFORMATION']";
-    private final String CHECKOUT_OVERVIEW_TITLE_XPATH = "//android.widget.TextView[@text='CHECKOUT: OVERVIEW']";
-    private final String CHECKOUT_COMPLETE_TITLE_XPATH = "//android.widget.TextView[@text='CHECKOUT: COMPLETE!']";
-    private final String FINISH_BUTTON_XPATH = "//android.widget.TextView[@text='FINISH']";
-    private final String BACK_HOME_BUTTON_XPATH = "//android.widget.TextView[@text='BACK HOME']";
-    private final String CANCEL_BUTTON_XPATH = "//android.widget.TextView[@text='CANCEL']";
-    private final String THANK_YOU_MESSAGE_XPATH = "//android.widget.TextView[contains(@text, 'THANK YOU FOR YOU ORDER')]";
+    // Locators
+    private final String FIRST_NAME_FIELD = "test-First Name";
+    private final String LAST_NAME_FIELD = "test-Last Name";
+    private final String ZIP_CODE_FIELD = "test-Zip/Postal Code";
+    private final String CONTINUE_BUTTON = "test-CONTINUE";
+    private final String FINISH_BUTTON = "test-FINISH";
+    private final String BACK_HOME_BUTTON = "test-BACK HOME";
+    private final String CHECKOUT_INFO_TITLE = "new UiSelector().text(\"CHECKOUT: YOUR INFORMATION\")";
+    private final String CHECKOUT_OVERVIEW_TITLE = "new UiSelector().text(\"CHECKOUT: OVERVIEW\")";
+    private final String CHECKOUT_COMPLETE_TITLE = "new UiSelector().text(\"CHECKOUT: COMPLETE!\")";
+    private final String FINISH_BUTTON_TEXT = "new UiSelector().text(\"FINISH\")";
+    private final String CANCEL_BUTTON_TEXT = "new UiSelector().text(\"CANCEL\")";
 
     public CheckoutPage(AndroidDriver driver) {
         super(driver);
     }
 
     /**
-     * Fill in checkout information
+     * Wait for checkout page to load - compatibility method
      */
-    public CheckoutPage fillCheckoutInformation(String firstName, String lastName, String zipCode) {
-        logger.info("Filling checkout information - First Name: " + firstName + ", Last Name: " + lastName + ", Zip: " + zipCode);
-
-        sendKeysByAccessibilityId(AppConstants.TEST_FIRST_NAME, firstName);
-        sendKeysByAccessibilityId(AppConstants.TEST_LAST_NAME, lastName);
-        sendKeysByAccessibilityId(AppConstants.TEST_ZIP_CODE, zipCode);
-
-        return this;
+    public void waitForCheckoutInformationPageToLoad() {
+        waitForCheckoutPage();
     }
 
     /**
-     * Fill checkout information with default test data
+     * Wait for checkout complete page to load - compatibility method
      */
-    public CheckoutPage fillCheckoutInformationWithDefaults() {
-        logger.info("Filling checkout information with default test data");
-        return fillCheckoutInformation(AppConstants.FIRST_NAME, AppConstants.LAST_NAME, AppConstants.ZIP_CODE);
+    public void waitForCheckoutCompletePageToLoad() {
+        try {
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+            wait.until(ExpectedConditions.presenceOfElementLocated(
+                    AppiumBy.androidUIAutomator(CHECKOUT_COMPLETE_TITLE)
+            ));
+        } catch (Exception e) {
+            System.err.println("Checkout complete page failed to load: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Check if checkout information page is displayed - compatibility method
+     */
+    public boolean isCheckoutInformationPageDisplayed() {
+        try {
+            WebElement titleElement = findByUIAutomator(CHECKOUT_INFO_TITLE);
+            return titleElement.isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Check if checkout overview page is displayed - compatibility method
+     */
+    public boolean isCheckoutOverviewPageDisplayed() {
+        try {
+            WebElement titleElement = findByUIAutomator(CHECKOUT_OVERVIEW_TITLE);
+            return titleElement.isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Check if checkout complete page is displayed - compatibility method
+     */
+    public boolean isCheckoutCompletePageDisplayed() {
+        try {
+            WebElement titleElement = findByUIAutomator(CHECKOUT_COMPLETE_TITLE);
+            return titleElement.isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Get checkout information title - compatibility method
+     */
+    public String getCheckoutInformationTitle() {
+        try {
+            WebElement titleElement = findByUIAutomator(CHECKOUT_INFO_TITLE);
+            return titleElement.getText();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /**
+     * Get checkout complete title - compatibility method
+     */
+    public String getCheckoutCompleteTitle() {
+        try {
+            WebElement titleElement = findByUIAutomator(CHECKOUT_COMPLETE_TITLE);
+            return titleElement.getText();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /**
+     * Check if back home button is displayed - compatibility method
+     */
+    public boolean isBackHomeButtonDisplayed() {
+        try {
+            WebElement button = findByAccessibilityId(BACK_HOME_BUTTON);
+            return button.isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Validate checkout information fields - compatibility method
+     */
+    public boolean validateCheckoutInformationFields() {
+        try {
+            findByAccessibilityId(FIRST_NAME_FIELD);
+            findByAccessibilityId(LAST_NAME_FIELD);
+            findByAccessibilityId(ZIP_CODE_FIELD);
+            findByAccessibilityId(CONTINUE_BUTTON);
+            System.out.println("All checkout information fields validated successfully");
+            return true;
+        } catch (Exception e) {
+            System.err.println("Failed to validate checkout information fields: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Fill checkout information with defaults - compatibility method
+     */
+    public boolean fillCheckoutInformationWithDefaults() {
+        try {
+            fillShippingInfo("John", "Doe", "12345");
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Click continue button - compatibility method
+     */
+    public void clickContinueButton() {
+        clickContinue();
+    }
+
+    /**
+     * Click finish button - compatibility method
+     */
+    public void clickFinishButton() {
+        clickFinish();
+    }
+
+    /**
+     * Click back home button - compatibility method
+     */
+    public void clickBackHomeButton() {
+        clickBackHome();
+    }
+
+    /**
+     * Wait for checkout page to load
+     */
+    public void waitForCheckoutPage() {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+        wait.until(ExpectedConditions.presenceOfElementLocated(
+                AppiumBy.accessibilityId(FIRST_NAME_FIELD)
+        ));
+    }
+
+    /**
+     * Fill shipping information
+     */
+    public void fillShippingInfo(String firstName, String lastName, String zipCode) {
+        try {
+            waitForCheckoutPage();
+
+            WebElement firstNameField = findByAccessibilityId(FIRST_NAME_FIELD);
+            firstNameField.clear();
+            firstNameField.sendKeys(firstName);
+
+            WebElement lastNameField = findByAccessibilityId(LAST_NAME_FIELD);
+            lastNameField.clear();
+            lastNameField.sendKeys(lastName);
+
+            WebElement zipCodeField = findByAccessibilityId(ZIP_CODE_FIELD);
+            zipCodeField.clear();
+            zipCodeField.sendKeys(zipCode);
+
+            System.out.println("Filled shipping info: " + firstName + " " + lastName + ", " + zipCode);
+        } catch (Exception e) {
+            System.err.println("Failed to fill shipping info: " + e.getMessage());
+            throw e;
+        }
     }
 
     /**
      * Click continue button
      */
-    public CheckoutPage clickContinueButton() {
-        logger.info("Clicking continue button");
-        clickByAccessibilityId(AppConstants.TEST_CONTINUE);
-        waitForPageLoad();
-        return this;
+    public void clickContinue() {
+        try {
+            WebElement continueButton = findByAccessibilityId(CONTINUE_BUTTON);
+            continueButton.click();
+            System.out.println("Clicked continue button");
+        } catch (Exception e) {
+            System.err.println("Failed to click continue: " + e.getMessage());
+            throw e;
+        }
     }
 
     /**
-     * Click finish button
+     * Scroll down to find and click finish button
      */
-    public CheckoutPage clickFinishButton() {
-        logger.info("Clicking finish button");
-        scrollDown(); // Scroll to make sure finish button is visible
-        clickByXpath(FINISH_BUTTON_XPATH);
-        waitForPageLoad();
-        return this;
+    public void clickFinish() {
+        try {
+            // First try to find the finish button without scrolling
+            try {
+                WebElement finishButton = findByAccessibilityId(FINISH_BUTTON);
+                finishButton.click();
+                System.out.println("Clicked finish button");
+                return;
+            } catch (Exception e) {
+                System.out.println("Finish button not visible, scrolling down...");
+            }
+
+            // If not found, scroll down to reveal the finish button
+            scrollToFinishButton();
+
+            // Try again after scrolling
+            WebElement finishButton = findByAccessibilityId(FINISH_BUTTON);
+            finishButton.click();
+            System.out.println("Clicked finish button after scrolling");
+
+        } catch (Exception e) {
+            System.err.println("Failed to click finish button: " + e.getMessage());
+
+            // Try alternative approach - look for FINISH text
+            try {
+                WebElement finishByText = findByUIAutomator(FINISH_BUTTON_TEXT);
+                finishByText.click();
+                System.out.println("Clicked finish button using text locator");
+            } catch (Exception e2) {
+                System.err.println("Failed with text locator too: " + e2.getMessage());
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * Scroll down to reveal the finish button
+     */
+    private void scrollToFinishButton() {
+        try {
+            // Scroll down from middle of screen to reveal finish button
+            Point start = new Point(540, 1500);
+            Point end = new Point(540, 800);
+            performSwipe(start, end);
+
+            // Wait a moment for the scroll to complete
+            Thread.sleep(1000);
+
+            System.out.println("Scrolled down to reveal finish button");
+        } catch (Exception e) {
+            System.err.println("Failed to scroll: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Perform swipe gesture
+     */
+    private void performSwipe(Point start, Point end) {
+        try {
+            final var finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+            var swipe = new Sequence(finger, 1);
+            swipe.addAction(finger.createPointerMove(Duration.ofMillis(0),
+                    PointerInput.Origin.viewport(), start.getX(), start.getY()));
+            swipe.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+            swipe.addAction(finger.createPointerMove(Duration.ofMillis(1000),
+                    PointerInput.Origin.viewport(), end.getX(), end.getY()));
+            swipe.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+            driver.perform(Arrays.asList(swipe));
+        } catch (Exception e) {
+            System.err.println("Failed to perform swipe: " + e.getMessage());
+        }
     }
 
     /**
      * Click back home button
      */
-    public void clickBackHomeButton() {
-        logger.info("Clicking back home button");
-        clickByXpath(BACK_HOME_BUTTON_XPATH);
-        waitForPageLoad();
-    }
-
-    /**
-     * Click cancel button
-     */
-    public void clickCancelButton() {
-        logger.info("Clicking cancel button");
-        clickByXpath(CANCEL_BUTTON_XPATH);
-        waitForPageLoad();
-    }
-
-    /**
-     * Check if checkout information page is displayed
-     */
-    public boolean isCheckoutInformationPageDisplayed() {
-        logger.debug("Checking if checkout information page is displayed");
-        return isElementDisplayedByXpath(CHECKOUT_INFO_TITLE_XPATH);
-    }
-
-    /**
-     * Check if checkout overview page is displayed
-     */
-    public boolean isCheckoutOverviewPageDisplayed() {
-        logger.debug("Checking if checkout overview page is displayed");
-        return isElementDisplayedByXpath(CHECKOUT_OVERVIEW_TITLE_XPATH);
-    }
-
-    /**
-     * Check if checkout complete page is displayed
-     */
-    public boolean isCheckoutCompletePageDisplayed() {
-        logger.debug("Checking if checkout complete page is displayed");
-        return isElementDisplayedByXpath(CHECKOUT_COMPLETE_TITLE_XPATH);
-    }
-
-    /**
-     * Wait for checkout information page to load
-     */
-    public CheckoutPage waitForCheckoutInformationPageToLoad() {
-        logger.info("Waiting for checkout information page to load");
-        waitUtils.waitForElementToBeVisible(By.xpath(CHECKOUT_INFO_TITLE_XPATH));
-        return this;
-    }
-
-    /**
-     * Wait for checkout overview page to load
-     */
-    public CheckoutPage waitForCheckoutOverviewPageToLoad() {
-        logger.info("Waiting for checkout overview page to load");
-        waitUtils.waitForElementToBeVisible(By.xpath(CHECKOUT_OVERVIEW_TITLE_XPATH));
-        return this;
-    }
-
-    /**
-     * Wait for checkout complete page to load
-     */
-    public CheckoutPage waitForCheckoutCompletePageToLoad() {
-        logger.info("Waiting for checkout complete page to load");
-        waitUtils.waitForElementToBeVisible(By.xpath(CHECKOUT_COMPLETE_TITLE_XPATH));
-        return this;
-    }
-
-    /**
-     * Get checkout information page title
-     */
-    public String getCheckoutInformationTitle() {
-        logger.debug("Getting checkout information title");
-        return getTextByXpath(CHECKOUT_INFO_TITLE_XPATH);
-    }
-
-    /**
-     * Get checkout overview page title
-     */
-    public String getCheckoutOverviewTitle() {
-        logger.debug("Getting checkout overview title");
-        return getTextByXpath(CHECKOUT_OVERVIEW_TITLE_XPATH);
-    }
-
-    /**
-     * Get checkout complete page title
-     */
-    public String getCheckoutCompleteTitle() {
-        logger.debug("Getting checkout complete title");
-        return getTextByXpath(CHECKOUT_COMPLETE_TITLE_XPATH);
-    }
-
-    /**
-     * Check if finish button is displayed
-     */
-    public boolean isFinishButtonDisplayed() {
-        logger.debug("Checking if finish button is displayed");
-        return isElementDisplayedByXpath(FINISH_BUTTON_XPATH);
-    }
-
-    /**
-     * Check if back home button is displayed
-     */
-    public boolean isBackHomeButtonDisplayed() {
-        logger.debug("Checking if back home button is displayed");
-        return isElementDisplayedByXpath(BACK_HOME_BUTTON_XPATH);
-    }
-
-    /**
-     * Check if continue button is displayed
-     */
-    public boolean isContinueButtonDisplayed() {
-        logger.debug("Checking if continue button is displayed");
-        return isElementDisplayedByAccessibilityId(AppConstants.TEST_CONTINUE);
-    }
-
-    /**
-     * Get thank you message text
-     */
-    public String getThankYouMessage() {
-        logger.debug("Getting thank you message");
+    public void clickBackHome() {
         try {
-            return getTextByXpath(THANK_YOU_MESSAGE_XPATH);
+            WebElement backHomeButton = findByAccessibilityId(BACK_HOME_BUTTON);
+            backHomeButton.click();
+            System.out.println("Clicked back home button");
         } catch (Exception e) {
-            logger.warn("Thank you message not found");
-            return "";
+            System.err.println("Failed to click back home: " + e.getMessage());
+            throw e;
         }
     }
 
     /**
-     * Check if thank you message is displayed
+     * Complete checkout process
      */
-    public boolean isThankYouMessageDisplayed() {
-        logger.debug("Checking if thank you message is displayed");
-        return isElementDisplayedByXpath(THANK_YOU_MESSAGE_XPATH);
-    }
+    public void completeCheckout(String firstName, String lastName, String zipCode) {
+        fillShippingInfo(firstName, lastName, zipCode);
+        clickContinue();
 
-    /**
-     * Complete entire checkout process
-     */
-    public CheckoutPage completeCheckoutProcess(String firstName, String lastName, String zipCode) {
-        logger.info("Completing entire checkout process");
-
-        // Fill information and continue
-        fillCheckoutInformation(firstName, lastName, zipCode)
-                .clickContinueButton();
-
-        // Finish the order
-        clickFinishButton();
-
-        return this;
-    }
-
-    /**
-     * Complete checkout with default data
-     */
-    public CheckoutPage completeCheckoutWithDefaults() {
-        logger.info("Completing checkout with default test data");
-        return completeCheckoutProcess(AppConstants.FIRST_NAME, AppConstants.LAST_NAME, AppConstants.ZIP_CODE);
-    }
-
-    /**
-     * Validate checkout information form fields
-     */
-    public boolean validateCheckoutInformationFields() {
-        logger.info("Validating checkout information form fields");
-        return isElementDisplayedByAccessibilityId(AppConstants.TEST_FIRST_NAME) &&
-                isElementDisplayedByAccessibilityId(AppConstants.TEST_LAST_NAME) &&
-                isElementDisplayedByAccessibilityId(AppConstants.TEST_ZIP_CODE) &&
-                isContinueButtonDisplayed();
-    }
-
-    /**
-     * Get error message (if any validation fails)
-     */
-    public String getErrorMessage() {
-        logger.debug("Getting error message from checkout page");
+        // Wait for overview page and then finish
         try {
-            return getTextByAccessibilityId(AppConstants.TEST_ERROR_MESSAGE);
-        } catch (Exception e) {
-            logger.debug("No error message found on checkout page");
-            return "";
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
+
+        clickFinish();
+
+        // Wait for completion page
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        clickBackHome();
     }
 }
