@@ -1,0 +1,8 @@
+"Epic","Feature","Story","FAILED","BROKEN","PASSED","SKIPPED","UNKNOWN"
+"","","","0","0","11","0","0"
+"Swag Labs Mobile Application","User Authentication","Invalid Login","1","0","0","0","0"
+"Swag Labs Mobile Application","User Authentication","Empty Field Validation","2","0","0","0","0"
+"Swag Labs Mobile Application","User Authentication","Problem User Login","0","0","1","0","0"
+"Swag Labs Mobile Application","User Authentication","Locked User Login","1","0","0","0","0"
+"Swag Labs Mobile Application","User Authentication","Valid Login","0","0","1","0","0"
+"Swag Labs Mobile Application","User Authentication","UI Validation","0","0","1","0","0"
