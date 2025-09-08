@@ -1,0 +1,12 @@
+com\amalitech\tests\QuickTest.class
+com\amalitech\tests\SimpleWorkingTest.class
+com\amalitech\listeners\ScreenshotListener.class
+com\amalitech\tests\ProductTest.class
+com\amalitech\tests\EndToEndTest.class
+com\amalitech\tests\CompleteShoppingTest.class
+com\amalitech\tests\LoginTest.class
+com\amalitech\listeners\TestListener.class
+com\amalitech\tests\CheckoutTest.class
+com\amalitech\tests\SimpleLoginTest.class
+com\amalitech\tests\CartTest.class
+com\amalitech\tests\LogoutTest.class

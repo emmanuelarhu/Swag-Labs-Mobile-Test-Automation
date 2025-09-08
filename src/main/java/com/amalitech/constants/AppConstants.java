@@ -9,9 +9,9 @@ public class AppConstants {
     public static final String PASSWORD = "secret_sauce";
 
     // Test data for checkout
-    public static final String FIRST_NAME = "John";
-    public static final String LAST_NAME = "Doe";
-    public static final String ZIP_CODE = "12345";
+    public static final String FIRST_NAME = "Emmanuel";
+    public static final String LAST_NAME = "Arhu";
+    public static final String ZIP_CODE = "0233";
 
     // Page titles
     public static final String PRODUCTS_PAGE_TITLE = "PRODUCTS";

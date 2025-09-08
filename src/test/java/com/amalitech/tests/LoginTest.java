@@ -4,9 +4,11 @@ import com.amalitech.base.BaseTest;
 import com.amalitech.constants.AppConstants;
 import com.amalitech.pages.LoginPage;
 import com.amalitech.pages.ProductsPage;
+import io.appium.java_client.AppiumBy;
 import io.qameta.allure.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openqa.selenium.WebElement;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -23,7 +25,9 @@ public class LoginTest extends BaseTest {
     public void setupPages() {
         loginPage = new LoginPage(driver);
         productsPage = new ProductsPage(driver);
-        loginPage.waitForLoginPageToLoad();
+
+        // Ensure we're on login page before each test
+        ensureOnLoginPage();
     }
 
     @Test(priority = 1, description = "Verify successful login with valid credentials")
@@ -49,6 +53,9 @@ public class LoginTest extends BaseTest {
                 "Products page title should match expected value");
 
         logger.info("Valid login test completed successfully");
+
+        // Logout to prepare for next test
+        performLogout();
     }
 
     @Test(priority = 2, description = "Verify login with locked out user")
@@ -63,7 +70,19 @@ public class LoginTest extends BaseTest {
         loginPage.clearAllFields();
         loginPage.loginWithLockedOutUser();
 
-        // Verify error message is displayed
+        // Wait for error message to appear
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        // Verify specific locked out error message using exact selector
+        boolean lockedOutMessageVisible = isElementVisible("new UiSelector().text(\"Sorry, this user has been locked out.\")");
+        System.out.println("Locked out message visible: " + lockedOutMessageVisible);
+        Assert.assertTrue(lockedOutMessageVisible, "Specific locked out error message should be displayed");
+
+        // Also verify through LoginPage method
         Assert.assertTrue(loginPage.isErrorMessageDisplayed(),
                 "Error message should be displayed for locked out user");
 
@@ -90,7 +109,19 @@ public class LoginTest extends BaseTest {
         loginPage.clearAllFields();
         loginPage.login("invalid_user", "invalid_password");
 
-        // Verify error message is displayed
+        // Wait for error message to appear
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        // Verify specific invalid credentials error message using exact selector
+        boolean invalidMessageVisible = isElementVisible("new UiSelector().text(\"Username and password do not match any user in this service.\")");
+        System.out.println("Invalid credentials message visible: " + invalidMessageVisible);
+        Assert.assertTrue(invalidMessageVisible, "Specific invalid credentials error message should be displayed");
+
+        // Also verify through LoginPage method
         Assert.assertTrue(loginPage.isErrorMessageDisplayed(),
                 "Error message should be displayed for invalid credentials");
 
@@ -118,6 +149,13 @@ public class LoginTest extends BaseTest {
         loginPage.enterPassword(AppConstants.PASSWORD);
         loginPage.clickLoginButton();
 
+        // Wait for error message
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
         // Verify error message is displayed
         Assert.assertTrue(loginPage.isErrorMessageDisplayed(),
                 "Error message should be displayed for empty username");
@@ -141,6 +179,13 @@ public class LoginTest extends BaseTest {
         loginPage.clearAllFields();
         loginPage.enterUsername(AppConstants.STANDARD_USER);
         loginPage.clickLoginButton();
+
+        // Wait for error message
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
 
         // Verify error message is displayed
         Assert.assertTrue(loginPage.isErrorMessageDisplayed(),
@@ -174,6 +219,9 @@ public class LoginTest extends BaseTest {
         // This test verifies basic login capability
 
         logger.info("Problem user login test completed successfully");
+
+        // Logout to prepare for next test
+        performLogout();
     }
 
     @Test(priority = 7, description = "Verify login page elements are displayed correctly")
@@ -198,5 +246,78 @@ public class LoginTest extends BaseTest {
                 "Login page image should be displayed");
 
         logger.info("Login page elements validation completed successfully");
+    }
+
+    // Helper method to ensure we're on login page
+    private void ensureOnLoginPage() {
+        try {
+            // Wait a moment for page to load
+            Thread.sleep(2000);
+
+            // If we can't find login elements, try to navigate to login
+            if (!loginPage.isLoginPageDisplayed()) {
+                System.out.println("Not on login page, attempting to navigate...");
+
+                // Try to open menu and logout if we're logged in
+                try {
+                    WebElement menuButton = driver.findElement(
+                            AppiumBy.androidUIAutomator("new UiSelector().className(\"android.widget.ImageView\").instance(1)")
+                    );
+                    menuButton.click();
+                    Thread.sleep(1000);
+
+                    WebElement logoutButton = driver.findElement(
+                            AppiumBy.androidUIAutomator("new UiSelector().text(\"LOGOUT\")")
+                    );
+                    logoutButton.click();
+                    Thread.sleep(2000);
+
+                    loginPage.waitForLoginPageToLoad();
+                    System.out.println("Successfully navigated to login page");
+                } catch (Exception e) {
+                    System.out.println("Could not navigate to login page: " + e.getMessage());
+                }
+            } else {
+                System.out.println("Already on login page");
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    // Helper method to perform logout after successful login
+    private void performLogout() {
+        try {
+            System.out.println("Performing logout...");
+
+            // Open hamburger menu
+            WebElement menuButton = driver.findElement(
+                    AppiumBy.androidUIAutomator("new UiSelector().className(\"android.widget.ImageView\").instance(1)")
+            );
+            menuButton.click();
+            Thread.sleep(1000);
+
+            // Click logout
+            WebElement logoutButton = driver.findElement(
+                    AppiumBy.androidUIAutomator("new UiSelector().text(\"LOGOUT\")")
+            );
+            logoutButton.click();
+            Thread.sleep(2000);
+
+            System.out.println("Logout completed");
+
+        } catch (Exception e) {
+            System.out.println("Logout failed: " + e.getMessage());
+        }
+    }
+
+    // Helper method to check if element is visible
+    private boolean isElementVisible(String uiSelector) {
+        try {
+            WebElement element = driver.findElement(AppiumBy.androidUIAutomator(uiSelector));
+            return element.isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

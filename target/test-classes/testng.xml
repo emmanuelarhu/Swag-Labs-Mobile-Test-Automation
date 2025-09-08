@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="AppiumTest" verbose="1" parallel="false" thread-count="1">
+
+    <!-- Test parameters -->
+    <parameter name="platformName" value="Android"/>
+    <parameter name="deviceName" value="DUK-AL20"/>
+    <parameter name="platformVersion" value="9"/>
+
+    <!-- Listeners for reporting -->
+    <listeners>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+    </listeners>
+
+    <!-- Smoke Test Suite -->
+    <test name="SmokeTests" preserve-order="true">
+        <classes>
+            <class name="com.amalitech.tests.LoginTest">
+                <methods>
+                    <include name="testValidLogin"/>
+                </methods>
+            </class>
+            <class name="com.amalitech.tests.ProductsTest">
+                <methods>
+                    <include name="testProductsPageDisplay"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <!-- Login Test Suite -->
+    <test name="LoginTests" preserve-order="true">
+        <classes>
+            <class name="com.amalitech.tests.LoginTest"/>
+        </classes>
+    </test>
+
+    <!-- Product Test Suite -->
+    <test name="ProductTests" preserve-order="true">
+        <classes>
+            <class name="com.amalitech.tests.ProductsTest"/>
+        </classes>
+    </test>
+
+    <!-- Cart Test Suite -->
+    <test name="CartTests" preserve-order="true">
+        <classes>
+            <class name="com.amalitech.tests.CartTest"/>
+        </classes>
+    </test>
+
+    <!-- Checkout Test Suite -->
+    <test name="CheckoutTests" preserve-order="true">
+        <classes>
+            <class name="com.amalitech.tests.CheckoutTest"/>
+        </classes>
+    </test>
+
+    <!-- End-to-End Test Suite -->
+    <test name="EndToEndTests" preserve-order="true">
+        <classes>
+            <class name="com.amalitech.tests.EndToEndTest"/>
+        </classes>
+    </test>
+
+    <!-- Regression Test Suite - All Tests -->
+    <test name="RegressionTests" preserve-order="true">
+        <classes>
+            <class name="com.amalitech.tests.LoginTest"/>
+            <class name="com.amalitech.tests.ProductsTest"/>
+            <class name="com.amalitech.tests.CartTest"/>
+            <class name="com.amalitech.tests.CheckoutTest"/>
+            <class name="com.amalitech.tests.EndToEndTest"/>
+        </classes>
+    </test>
+
+</suite>
